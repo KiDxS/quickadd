@@ -992,40 +992,43 @@ def ruleDurationHalf(ts: datetime, pm_bias: bool, date_format: str, m: RegexMatc
 #         return interval
 #     return None
 #
-#
-# @rule(predicate("hasDate"), r"f[üo]r", dimension(Duration))
-# def ruleTimeDuration(
-#     ts: datetime, t: Time, _: RegexMatch, dur: Duration
-# ) -> Optional[Interval]:
-#     # Examples:
-#     # on the 27th for one day
-#     # heute eine Übernachtung
-#
-#     # To make an interval we should at least have a date
-#     if dur.unit in (
-#         DurationUnit.DAYS,
-#         DurationUnit.NIGHTS,
-#         DurationUnit.WEEKS,
-#         DurationUnit.MONTHS,
-#     ):
-#         delta = _duration_to_relativedelta(dur)
-#         end_ts = t.dt + delta
-#         # We the end of the interval is a date without particular times
-#         end = Time(year=end_ts.year, month=end_ts.month, day=end_ts.day)
-#         return Interval(t_from=t, t_to=end)
-#
-#     if dur.unit in (DurationUnit.HOURS, DurationUnit.MINUTES):
-#         delta = _duration_to_relativedelta(dur)
-#         end_ts = t.dt + delta
-#         end = Time(
-#             year=end_ts.year,
-#             month=end_ts.month,
-#             day=end_ts.day,
-#             hour=end_ts.hour,
-#             minute=end_ts.minute,
-#         )
-#         return Interval(t_from=t, t_to=end)
-#     return None
+@rule(dimension(Time), "(for)\s*" + r"(?P<num>\d+)\s*" + _rule_durations)
+def ruleIntervalFromDuration(
+    ts: datetime, pm_bias: bool, date_format: str, t: Time, m: RegexMatch,
+) -> Optional[Interval]:
+    # task 8pm for 30 minutes
+    dur = ruleDigitDuration(ts, pm_bias, date_format, m)
+
+    try:
+        time_dt = t.dt
+    except ValueError:
+        return
+
+    if dur.unit in (
+        DurationUnit.DAYS,
+        DurationUnit.NIGHTS,
+        DurationUnit.WEEKS,
+        DurationUnit.MONTHS,
+    ):
+        delta = _duration_to_relativedelta(dur)
+        end_ts = time_dt + delta
+        end = Time(year=end_ts.year, month=end_ts.month, day=end_ts.day)
+        if t.hour:
+            end = Time(year=end_ts.year, month=end_ts.month, day=end_ts.day, hour=end_ts.hour, minute=end_ts.minute)
+        return Interval(t_from=t, t_to=end)
+
+    if dur.unit in (DurationUnit.HOURS, DurationUnit.MINUTES):
+        delta = _duration_to_relativedelta(dur)
+        end_ts = time_dt + delta
+        end = Time(
+            year=end_ts.year,
+            month=end_ts.month,
+            day=end_ts.day,
+            hour=end_ts.hour,
+            minute=end_ts.minute,
+        )
+        return Interval(t_from=t, t_to=end)
+    return None
 
 
 def _duration_to_relativedelta(dur: Duration) -> relativedelta:
@@ -1040,7 +1043,7 @@ def _duration_to_relativedelta(dur: Duration) -> relativedelta:
 
 
 @rule(dimension(Time), dimension(Duration))
-def TimeDuration(ts: datetime, pm_bias: bool, date_format: str, t: Time, d: Duration) -> Time:
+def ruleTimeDuration(ts: datetime, pm_bias: bool, date_format: str, t: Time, d: Duration) -> Time:
     # beer 4am in 3 days
     delta = d.time(ts)
     time = Time(
@@ -1054,7 +1057,7 @@ def TimeDuration(ts: datetime, pm_bias: bool, date_format: str, t: Time, d: Dura
 
 
 @rule(dimension(Duration), dimension(Time))
-def DurationTime(ts: datetime, pm_bias: bool, date_format: str, d: Duration, t: Time) -> Time:
+def ruleDurationTime(ts: datetime, pm_bias: bool, date_format: str, d: Duration, t: Time) -> Time:
     # beer in 3 days 4am
     delta = d.time(ts)
     time = Time(
@@ -1068,7 +1071,7 @@ def DurationTime(ts: datetime, pm_bias: bool, date_format: str, d: Duration, t: 
 
 
 @rule(dimension(Duration), dimension(Interval))
-def DurationInterval(ts: datetime, pm_bias: bool, date_format: str, d: Duration, i: Interval) -> Interval:
+def ruleDurationInterval(ts: datetime, pm_bias: bool, date_format: str, d: Duration, i: Interval) -> Interval:
     # beer in 3 days 4-6pm
 
     if not i.isTimeInterval:
@@ -1093,7 +1096,7 @@ def DurationInterval(ts: datetime, pm_bias: bool, date_format: str, d: Duration,
 
 
 @rule(dimension(Interval), dimension(Duration))
-def IntervalDuration(ts: datetime, pm_bias: bool, date_format: str, i: Interval, d: Duration) -> Interval:
+def ruleIntervalDuration(ts: datetime, pm_bias: bool, date_format: str, i: Interval, d: Duration) -> Interval:
 
     # beer 4-6pm in 3 days
     # TODO: "4-6 in 3 days" doesn't work
