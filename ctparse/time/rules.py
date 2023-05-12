@@ -1459,8 +1459,8 @@ def ruleRecurringDOW2DOW(ts: datetime, pm_bias: bool, date_format: str, m1: Rege
 
 
 # TODO 5-6 not working
-@rule(r"(weekdays|every weekday)\s*", predicate("isTOD"))
-def ruleRecurringWeekdays(ts: datetime, pm_bias: bool, date_format: str, m: RegexMatch, t: Time) -> Optional[Recurring]:
+@rule(r"(weekdays|every weekday)\s*")
+def ruleRecurringWeekdays(ts: datetime, pm_bias: bool, date_format: str, m: RegexMatch) -> Optional[Recurring]:
     # weekdays 5-6 / every weekday 4pm
     dows = (0, 1, 2, 3, 4)
 
@@ -1468,28 +1468,10 @@ def ruleRecurringWeekdays(ts: datetime, pm_bias: bool, date_format: str, m: Rege
         dm = ts + relativedelta(weekday=dow)
         if dm <= ts:
             dm += relativedelta(weeks=1)
-            time = Time(year=dm.year, month=dm.month, day=dm.day, hour=t.hour, minute=t.minute)
+            time = Time(year=dm.year, month=dm.month, day=dm.day)
         if dm >= ts:
             dm += relativedelta(weekday=dow)
-            time = Time(year=dm.year, month=dm.month, day=dm.day, hour=t.hour, minute=t.minute)
-
-    return Recurring(frequency=RecurringFrequency.WEEKLY.value, interval=1, start_time=time, end_time=time,
-                     byday=dows)
-
-
-@rule(predicate("isTOD"), r"(weekdays|every weekday)\s*")
-def ruleRecurringWeekdays2(ts: datetime, pm_bias: bool, date_format: str, t: Time, m: RegexMatch) -> Optional[Recurring]:
-    # 5-6 weekdays / 10am every weekday
-    dows = (0, 1, 2, 3, 4)
-
-    for dow in dows:
-        dm = ts + relativedelta(weekday=dow)
-        if dm <= ts:
-            dm += relativedelta(weeks=1)
-            time = Time(year=dm.year, month=dm.month, day=dm.day, hour=t.hour, minute=t.minute)
-        if dm >= ts:
-            dm += relativedelta(weekday=dow)
-            time = Time(year=dm.year, month=dm.month, day=dm.day, hour=t.hour, minute=t.minute)
+            time = Time(year=dm.year, month=dm.month, day=dm.day)
 
     return Recurring(frequency=RecurringFrequency.WEEKLY.value, interval=1, start_time=time, end_time=time,
                      byday=dows)
