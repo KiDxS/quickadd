@@ -1424,8 +1424,43 @@ def ruleRecurringDOWDOW(ts: datetime, pm_bias: bool, date_format: str, m1: Regex
     return Recurring(frequency=RecurringFrequency.WEEKLY.value, interval=1, start_time=time1, end_time=time1, byday=(time1.dt.weekday(), time2.dt.weekday()))
 
 
+@rule(r"(every|each)\s*", predicate("isDOW"), r"(to)\s*", predicate("isDOW"))
+def ruleRecurringDOW2DOW(ts: datetime, pm_bias: bool, date_format: str, m1: RegexMatch, dow1: Time, m2: RegexMatch, dow2: Time) -> Optional[Recurring]:
+    # every wednesday to monday
+    dows = []
+
+    if dow1.DOW < dow2.DOW:
+        dows = [day for day in range(dow1.DOW, dow2.DOW+1)]
+
+    elif dow1.DOW > dow2.DOW:
+        i = dow1.DOW
+        dows.append(i)
+        while i != dow2.DOW:
+            if i == 6:
+                i = 0
+                dows.append(i)
+                continue
+            i += 1
+            dows.append(i)
+
+    dows = tuple(dows)
+
+    for dow in dows:
+        dm = ts + relativedelta(weekday=dow)
+        if dm <= ts:
+            dm += relativedelta(weeks=1)
+            time = Time(year=dm.year, month=dm.month, day=dm.day)
+        if dm >= ts:
+            dm += relativedelta(weekday=dow)
+            time = Time(year=dm.year, month=dm.month, day=dm.day)
+
+    return Recurring(frequency=RecurringFrequency.WEEKLY.value, interval=1, start_time=time, end_time=time,
+                     byday=dows)
+
+
+# TODO 5-6 not working
 @rule(r"(weekdays|every weekday)\s*", predicate("isTOD"))
-def ruleRecurringWeekdays(ts: datetime, pm_bias: bool, date_format: str, m: RegexMatch, t: Time) -> Optional[RecurringArray]:
+def ruleRecurringWeekdays(ts: datetime, pm_bias: bool, date_format: str, m: RegexMatch, t: Time) -> Optional[Recurring]:
     # weekdays 5-6 / every weekday 4pm
     dows = (0, 1, 2, 3, 4)
 
@@ -1443,7 +1478,7 @@ def ruleRecurringWeekdays(ts: datetime, pm_bias: bool, date_format: str, m: Rege
 
 
 @rule(predicate("isTOD"), r"(weekdays|every weekday)\s*")
-def ruleRecurringWeekdays2(ts: datetime, pm_bias: bool, date_format: str, t: Time, m: RegexMatch) -> Optional[RecurringArray]:
+def ruleRecurringWeekdays2(ts: datetime, pm_bias: bool, date_format: str, t: Time, m: RegexMatch) -> Optional[Recurring]:
     # 5-6 weekdays / 10am every weekday
     dows = (0, 1, 2, 3, 4)
 
