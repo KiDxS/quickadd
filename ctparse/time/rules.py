@@ -999,10 +999,11 @@ def ruleIntervalFromDuration(
     # task 8pm for 30 minutes
     dur = ruleDigitDuration(ts, pm_bias, date_format, m)
 
-    try:
+    if t.hasDate:
         time_dt = t.dt
-    except ValueError:
-        return
+    else:
+        t.day, t.month, t.year = ts.day, ts.month, ts.year
+        time_dt = t.dt
 
     if dur.unit in (
         DurationUnit.DAYS,
