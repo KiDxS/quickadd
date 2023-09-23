@@ -98,16 +98,6 @@ rrule_ **support**
     Out[2]: 'beers and burgers'
     
     
-**Label extraction**
-
-
-.. code:: python
-
-    r = ctparse("beers and burgers friday 8pm-9pm #fun")
-    r.labels
-    Out[3]: ['fun']
-
-
 **PM bias**
 
 
