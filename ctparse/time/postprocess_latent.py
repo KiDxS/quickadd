@@ -56,7 +56,7 @@ def _latent_time_interval(ts: datetime, ti: Interval) -> Interval:
     if ti.t_from.period == "pm" and ti.t_to.period == "am":
         dm_to += relativedelta(days=1)
 
-    return Interval(
+    res = Interval(
         t_from=Time(
             year=dm_from.year,
             month=dm_from.month,
@@ -74,3 +74,6 @@ def _latent_time_interval(ts: datetime, ti: Interval) -> Interval:
             period=ti.t_to.period,
         ),
     )
+    res.mstart = ti.mstart
+    res.mend = ti.mend
+    return res
