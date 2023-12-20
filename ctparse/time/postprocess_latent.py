@@ -35,9 +35,13 @@ def _latent_tod(ts: datetime, tod: Time) -> Time:
     dm = ts + relativedelta(hour=tod.hour, minute=tod.minute or 0)
     if dm <= ts:
         dm += relativedelta(days=1)
-    return Time(
+
+    res = Time(
         year=dm.year, month=dm.month, day=dm.day, hour=dm.hour, minute=dm.minute, period=tod.period,
     )
+    res.mstart = tod.mstart
+    res.mend = tod.mend
+    return res
 
 
 def _latent_time_interval(ts: datetime, ti: Interval) -> Interval:
@@ -52,7 +56,7 @@ def _latent_time_interval(ts: datetime, ti: Interval) -> Interval:
     if ti.t_from.period == "pm" and ti.t_to.period == "am":
         dm_to += relativedelta(days=1)
 
-    return Interval(
+    res = Interval(
         t_from=Time(
             year=dm_from.year,
             month=dm_from.month,
@@ -70,3 +74,6 @@ def _latent_time_interval(ts: datetime, ti: Interval) -> Interval:
             period=ti.t_to.period,
         ),
     )
+    res.mstart = ti.mstart
+    res.mend = ti.mend
+    return res
