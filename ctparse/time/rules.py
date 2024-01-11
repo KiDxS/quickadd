@@ -497,6 +497,8 @@ def _maybe_apply_am_pm(t: Time, pm_bias: bool, date_format: str, ampm_match: str
             return t
 
     if ampm_match.lower().startswith("a") and t.hour <= 12:
+        if t.hour == 12:
+            t.hour = 0
         t.period = "am"
         return t
 
