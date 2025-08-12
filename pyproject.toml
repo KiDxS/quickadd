@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quickadd"
+version = "0.6.5"
+description = "Parse natural language time expressions in python"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "MIT"}
+authors = [
+    {name = "Sebastian Mika/Comtravo", email = "sebastian.mika@comtravo.com"}
+]
+keywords = ["quickadd"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Linguistic",
+]
+requires-python = ">=3.6"
+dependencies = [
+    "python-dateutil>=2.7.3,<3.0.0",
+    "regex>=2018.6.6",
+    "tqdm>=4.23.4,<5.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/inferense/quickadd"
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["pytest-runner"]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["ctparse*"]
+
+[tool.setuptools.package-dir]
+ctparse = "ctparse"
+
+[tool.setuptools.package-data]
+ctparse = ["models/model.pbz", "py.typed"]
+
+[tool.bumpversion]
+current_version = "0.6.5"
+commit = true
+tag = true
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "ctparse/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+include = ["ctparse/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95
+
+[tool.flake8]
+exclude = ["docs"]
+max-line-length = 80
+select = ["C", "E", "F", "W", "B", "B950"]
+ignore = ["E203", "E266", "E501", "W503"]
